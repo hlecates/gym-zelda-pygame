@@ -3,7 +3,7 @@ from settings import *
 from tile import Tile
 from player import Player
 from debug import debug
-from support import *
+from support import import_csv_layout, import_folder, _resolve_asset_path
 from random import choice, randint
 from weapon import Weapon
 from ui import UI
@@ -47,7 +47,7 @@ class Level:
 			'entities': import_csv_layout('../map/map_Entities.csv')
 		}
 		graphics = {
-			'grass': import_folder('../graphics/Grass'),
+			'grass': import_folder('../graphics/grass'),
 			'objects': import_folder('../graphics/objects')
 		}
 
@@ -167,7 +167,7 @@ class YSortCameraGroup(pygame.sprite.Group):
 		self.offset = pygame.math.Vector2()
 
 		# creating the floor
-		self.floor_surf = pygame.image.load('../graphics/tilemap/ground.png').convert()
+		self.floor_surf = pygame.image.load(_resolve_asset_path('../graphics/tilemap/ground.png')).convert()
 		self.floor_rect = self.floor_surf.get_rect(topleft = (0,0))
 
 	def custom_draw(self,player):
