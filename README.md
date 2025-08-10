@@ -8,6 +8,13 @@ I recently finished a playthrough of **_The Legend of Zelda: Breath of the Wild_
 - rely on **ROMs/emulators**, or
 - are tangled up with **deprecated `gym` + NumPy compatibility issues**.
 
+## Installation
+gym-zelda-pygame is published on **PyPI**. Install with:
+
+```bash
+pip install gym-zelda-pygame
+```
+
 ## Environment Details
 
 ### Spaces
