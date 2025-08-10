@@ -71,6 +71,7 @@ Each step() returns an info dict with:
 
 ## Credit
 
-Game code adapted from Clear Code’s Zelda tutorial: https://github.com/clear-code-projects/Zelda
+- **Game code** adapted from Clear Code’s Zelda tutorial: [clear-code-projects/Zelda](https://github.com/clear-code-projects/Zelda)
+- **Graphics and audio assets** courtesy of Pixel-boy/AAA under CC0: [Ninja Adventure asset pack](https://pixel-boy.itch.io/ninja-adventure-asset-pack)
 
-Respect the original project’s license and assets. This environment is an RL wrapper around their codebase to support education.
+Respect the original projects’ licenses and assets. This environment is an RL wrapper around their codebase to support education.

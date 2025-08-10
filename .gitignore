@@ -124,6 +124,9 @@ ENV/
 # Jupyter Notebook
 .ipynb_checkpoints
 
+#pytest
+.pytest_cache/
+
 # ========================
 # JAVA
 # ========================

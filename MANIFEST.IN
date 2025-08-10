@@ -1,3 +1,7 @@
+include README.md
+include LICENSE
+
+# Game assets and code data
 recursive-include gym_zelda_pygame/game/graphics *
 recursive-include gym_zelda_pygame/game/audio *
 recursive-include gym_zelda_pygame/game/map *
