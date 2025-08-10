@@ -1,0 +1,4 @@
+recursive-include gym_zelda_pygame/game/graphics *
+recursive-include gym_zelda_pygame/game/audio *
+recursive-include gym_zelda_pygame/game/map *
+include gym_zelda_pygame/game/code *.py
