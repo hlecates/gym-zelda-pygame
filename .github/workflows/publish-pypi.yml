@@ -1,12 +1,14 @@
 name: Publish to PyPI
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v*"
 
 jobs:
-  publish:
+  build-and-publish:
     runs-on: ubuntu-latest
+    environment: pypi
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,4 +26,5 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-          skip-existing: true 
+          skip-existing: true
+          verbose: true 
