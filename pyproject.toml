@@ -25,5 +25,5 @@ include = ["gym_zelda_pygame*"]
   "game/graphics/**/*",
   "game/audio/**/*",
   "game/map/*",
-  "game/code/*.py",
+  "game/code/**/*.py",
 ]
