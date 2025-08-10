@@ -3,6 +3,8 @@ import pygame
 from typing import Dict, Any, Optional
 import sys
 from pathlib import Path
+import random
+import numpy as np
 
 # Add the game code directory to the path
 game_dir = Path(__file__).parent / "game" / "code"
@@ -27,7 +29,7 @@ os.chdir(original_cwd)
 class GameAdapter:
     """Adapter to wrap the Clear Code Pygame Zelda game for RL training."""
     
-    def __init__(self):
+    def __init__(self, seed: Optional[int] = None):
         if not pygame.get_init():
             pygame.init()
         
@@ -46,8 +48,11 @@ class GameAdapter:
         self.player_exp = 0
         self.enemy_count = 0
         
+        # Seeding
+        self.seed = seed
+        
         # Initialize the level
-        self.reset()
+        self.reset(seed=seed)
     
     def _change_to_game_dir(self):
         """Change to game directory for asset loading."""
@@ -57,8 +62,13 @@ class GameAdapter:
         """Restore original working directory."""
         os.chdir(self.original_cwd)
     
-    def reset(self):
+    def reset(self, seed: Optional[int] = None):
         """Reset the game to initial state."""
+        if seed is not None:
+            self.seed = seed
+            random.seed(seed)
+            np.random.seed(seed)
+        
         self._change_to_game_dir()
         try:
             # Create new level instance

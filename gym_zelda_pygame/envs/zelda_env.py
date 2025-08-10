@@ -3,6 +3,7 @@ import pygame
 import gymnasium as gym
 from gymnasium import spaces
 from typing import Optional, Dict, Any
+import os
 
 from gym_zelda_pygame.adapter import GameAdapter
 
@@ -20,14 +21,22 @@ class ZeldaEnv(gym.Env):
         # Store render mode and custom reward function
         self.render_mode = render_mode
         self.custom_reward_fn = custom_reward_fn
+        self._owns_pygame = False
         
         # Screen dimensions from Clear Code tutorial
         self.screen_width = 1280
         self.screen_height = 720
         
+        # Headless safety: use dummy drivers when not rendering to human window
+        if render_mode != "human":
+            os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
+            os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
+            os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
+        
         # Initialize Pygame if needed
         if not pygame.get_init():
             pygame.init()
+            self._owns_pygame = True
         
         # Create screen surface
         if render_mode == "human":
@@ -56,13 +65,12 @@ class ZeldaEnv(gym.Env):
         
         # Episode tracking
         self.episode_steps = 0
-        self.max_episode_steps = 3000
         
         # Game state tracking for rewards
         self.previous_player_health = 100
         self.previous_player_exp = 0
         self.previous_enemy_count = 0
-        
+    
     def _get_observation(self) -> np.ndarray:
         """Convert the pygame screen to numpy array observation."""
         # Get the pixel array from pygame surface
@@ -162,22 +170,14 @@ class ZeldaEnv(gym.Env):
             
         return reward
     
-    def _is_done(self) -> bool:
-        """Check if episode should terminate."""
-        # Episode ends if:
-        # 1. Max steps reached
-        if self.episode_steps >= self.max_episode_steps:
-            return True
-            
-        # 2. Player died
+    def _is_terminated(self) -> bool:
+        """Check if episode should terminate due to environment terminal states."""
         current_state = self.game_adapter.get_game_state()
+        # Terminal if player died or all enemies defeated
         if current_state['player_health'] <= 0:
             return True
-            
-        # 3. All enemies defeated (optional win condition)
         if current_state['enemy_count'] == 0:
             return True
-        
         return False
     
     def reset(self, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None):
@@ -187,8 +187,8 @@ class ZeldaEnv(gym.Env):
         # Reset episode tracking
         self.episode_steps = 0
         
-        # Reset game state
-        self.game_adapter.reset()
+        # Reset game state (propagate seed)
+        self.game_adapter.reset(seed=seed)
         
         # Clear screen
         self.screen.fill((113, 221, 238))  # WATER_COLOR from settings
@@ -221,30 +221,44 @@ class ZeldaEnv(gym.Env):
         # Calculate reward
         reward = self._calculate_reward()
         
-        # Check if episode is done
-        done = self._is_done()
+        # Termination flags
+        terminated = self._is_terminated()
+        truncated = False  # TimeLimit wrapper handles truncation via registration
         
         # Update episode step counter
         self.episode_steps += 1
         
-        # Create info dict
+        # Info dict with useful diagnostics
+        state = self.game_adapter.get_game_state()
         info = {
             'episode_steps': self.episode_steps,
-            'max_steps_reached': self.episode_steps >= self.max_episode_steps
+            'player_health': state['player_health'],
+            'player_exp': state['player_exp'],
+            'enemy_count': state['enemy_count'],
+            'player_pos': state['player_pos'],
         }
         
-        return observation, reward, done, False, info
+        return observation, reward, terminated, truncated, info
     
     def render(self):
         """Render the environment."""
         if self.render_mode == "human":
-            # Update the display
+            # Update the display and throttle FPS
             pygame.display.flip()
+            if hasattr(self.game_adapter, 'clock'):
+                self.game_adapter.clock.tick(self.metadata['render_fps'])
         elif self.render_mode == "rgb_array":
             # Return the screen as numpy array
             return self._get_observation()
     
     def close(self):
         """Clean up environment resources."""
-        if pygame.get_init():
-            pygame.quit()
+        # Only close pygame if we initialized it here
+        if self._owns_pygame and pygame.get_init():
+            try:
+                if pygame.mixer.get_init():
+                    pygame.mixer.quit()
+                pygame.display.quit()
+            finally:
+                pygame.quit()
+            self._owns_pygame = False

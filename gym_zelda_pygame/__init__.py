@@ -9,9 +9,15 @@ register(
     max_episode_steps=3000,
 )
 
-# Public API
-from .envs import ZeldaEnv  # noqa: E402
+# Register a convenience wrapped variant with 84x84 grayscale stacked frames
+register(
+    id="ZeldaCC-Pixels84-v0",
+    entry_point="gym_zelda_pygame:make_zelda_pixels84",
+    kwargs={"render_mode": None, "num_skip": 4, "num_stack": 4},
+    max_episode_steps=3000,
+)
 
+from .envs import ZeldaEnv  # noqa: E402
 
 def make_zelda_pixels84(
     render_mode: Optional[str] = None,
@@ -25,8 +31,8 @@ def make_zelda_pixels84(
     - Final observation space is (num_stack, 84, 84) uint8
     """
     import gymnasium as gym
-    from gymnasium.wrappers import FrameStack
-    from .wrappers import SkipFrame, GrayscaleResize84, ChannelFirst
+    # Use local wrappers to avoid cross-version issues
+    from .wrappers import SkipFrame, GrayscaleResize84, ChannelFirst, FrameStack
 
     env = ZeldaEnv(render_mode=render_mode)
     env = SkipFrame(env, num_skip=num_skip)
