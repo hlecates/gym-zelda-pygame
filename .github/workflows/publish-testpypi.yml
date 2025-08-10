@@ -8,6 +8,8 @@ on:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -26,5 +28,3 @@ jobs:
         with:
           repository-url: https://test.pypi.org/legacy/
           skip-existing: true 
-        permissions:
-          id-token: write 
