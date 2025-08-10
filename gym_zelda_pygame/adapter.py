@@ -146,7 +146,7 @@ class GameAdapter:
                     player.attack_time = pygame.time.get_ticks()
                     if hasattr(player, 'create_attack'):
                         player.create_attack()
-                    if hasattr(player, 'weapon_attack_sound'):
+                    if hasattr(player, 'weapon_attack_sound') and player.weapon_attack_sound:
                         player.weapon_attack_sound.play()
                 
                 # Handle magic
@@ -209,7 +209,7 @@ class GameAdapter:
             # Draw UI
             if hasattr(self.level, 'ui') and hasattr(self.level, 'player'):
                 if hasattr(self.level.ui, 'display'):
-                    self.level.ui.display(surface)
+                    self.level.ui.display(self.level.player)
             
             # Draw upgrade menu if active
             if hasattr(self.level, 'game_paused') and self.level.game_paused:

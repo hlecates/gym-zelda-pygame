@@ -1,6 +1,14 @@
 import pygame, sys
 from settings import *
 from level import Level
+from support import _resolve_asset_path
+
+# Safely load main sound only if mixer is initialized
+try:
+	main_sound = pygame.mixer.Sound(_resolve_asset_path('../audio/main.ogg'))
+	main_sound.set_volume(0.5)
+except pygame.error:
+	main_sound = None
 
 class Game:
 	def __init__(self):
@@ -14,9 +22,8 @@ class Game:
 		self.level = Level()
 
 		# sound 
-		main_sound = pygame.mixer.Sound('../audio/main.ogg')
-		main_sound.set_volume(0.5)
-		main_sound.play(loops = -1)
+		if main_sound:
+			main_sound.play(loops = -1)
 	
 	def run(self):
 		while True:
