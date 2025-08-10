@@ -1,10 +1,76 @@
-This project is published under the Creative Commons Zero (CC0) license. 
+# gym-zelda-pygame
 
-You can use the code for any project you like, including commercial ones. Attributions would be appreciated but are not required. 
+A **Gymnasium** environment that wraps the Clear Code Pygame “Zelda” game into a **ROM-free**, modern RL playground. It exposes a pixel-observation interface, discrete actions, sensible rewards, and familiar wrappers (skip-frames, gray-scale resize to 84×84, frame-stack, normalize, channel-first) so you can train DQN/PPO/IMPALA-style agents without touching emulators or legacy Gym.
 
-The art assets and the soundtrack have been done by Pixel-boy and AAA and can be found here: https://pixel-boy.itch.io/ninja-adventure-asset-pack
-They are also published under a CC0 license. 
+## Motivation
 
+I recently finished a playthrough of **_The Legend of Zelda: Breath of the Wild_** and wanted to experiment with applying **reinforcement learning** to a Zelda-style world. Most existing environments either:
+- rely on **ROMs/emulators**, or
+- are tangled up with **deprecated `gym` + NumPy compatibility issues**.
 
+## Environment Details
 
-After playing botw, wanted to apply and exp,ore RL in zelda. Avaiobale resources have countless drepcated gym warnings, not compatible with numpy versions, and many need a ROM, which when obtained legally can cost the price of a game and trnslatir/uploader thingie
+### Spaces
+
+- **Action Space**: `Discrete(8)`
+    0) no-op
+    1) move up
+    2) move down
+    3) move left
+    4) move right
+    5) attack
+    6) magic
+    7) menu
+  
+- **Observation Space**: `Box(low=0, high=255, shape=(720, 1280, 3), dtype=uint8)` by default  
+(Typically wrap this 84×84 grayscale and stack frames for learning)
+
+### Rendering
+
+- `render_mode="human"`: Pygame window (60 FPS throttle)
+- `render_mode="rgb_array"`: returns the current frame as a numpy array
+- Headless safety: when not using `"human"`, SDL dummy drivers are used automatically.
+
+### Episode Termination
+
+- Episode ends when:
+- Player health ≤ 0, or
+- All enemies defeated
+
+### Reward
+
+Default (configurable) reward shaping in `ZeldaEnv`:
+- Small step penalty: `-0.001` per step (encourage efficiency)
+- Health changes: penalty for loss, small reward for gain
+- Experience gain: small positive reward
+- Enemy defeats: large positive reward (`+10.0` per enemy)
+- Death penalty: `-100.0`
+
+You can pass a **custom reward function** via `custom_reward_fn`:
+```python
+def my_reward_fn(current_state, previous_state, episode_steps):
+  # current_state: dict with keys shown below
+  # previous_state: same keys for previous step
+  # return float
+  ...
+env = ZeldaEnv(render_mode="rgb_array", custom_reward_fn=my_reward_fn)
+```
+
+### Info Dict
+
+Each step() returns an info dict with: 
+```python
+{
+  'episode_steps': int,
+  'player_health': int,
+  'player_exp': int,
+  'enemy_count': int,
+  'player_pos': (x: int, y: int),
+}
+```
+
+## Credit
+
+Game code adapted from Clear Code’s Zelda tutorial: https://github.com/clear-code-projects/Zelda
+
+Respect the original project’s license and assets. This environment is an RL wrapper around their codebase to support education.
